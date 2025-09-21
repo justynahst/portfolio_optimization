@@ -34,6 +34,8 @@ def regression_portfolio_weights(beta, N, w_ew):
     return w_ew - N @ beta.reshape(-1, 1)
 
 def get_minvar_weights(train_data):
+   #Minimum-variance portfolio block, 
+   # calculating prtfolio weights using Lasso/Ridge done at line 85
    p = train_data.shape[1]
    sigma_hat = np.cov(train_data.T)
    try:
@@ -43,8 +45,8 @@ def get_minvar_weights(train_data):
    except:
        return np.full(p, 1.0/p)
 
-#252 trading days in a year, rolling window set for 6 months
-WINDOW = 135
+#126 training days in a year, rolling window set for 6 months
+WINDOW = 100
 alphas = np.logspace(-8, 8, 21)
 dates = returns.index
 print(dates)
