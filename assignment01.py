@@ -46,7 +46,7 @@ def get_minvar_weights(train_data):
        return np.full(p, 1.0/p)
 
 #126 training days in a year, rolling window set for 6 months
-WINDOW = 100
+WINDOW = 126
 alphas = np.logspace(-8, 8, 21)
 dates = returns.index
 print(dates)
