@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 from sklearn.linear_model import LassoCV, RidgeCV
 
+import matplotlib.pyplot as plt
+import matplotlib.dates as mdates 
+
 #Load CSV
 returns = pd.read_csv('training_data.csv')
 
@@ -10,6 +13,9 @@ returns['Date'] = pd.to_datetime(returns['Date'],format='%Y%m%d')
 
 #set date frame index
 returns.set_index('Date', inplace=True)
+
+#added: express percentage in decimals
+returns = returns / 100.0
 
 #Modularize the code
 def prepare_regression_matrices(R):
@@ -52,9 +58,9 @@ dates = returns.index
 print(dates)
 #Below start and end dates will be used for test data, 
 #with the auumption that train data for 126 days prior is avilable in the training_data.csv file.
-start = returns.index.get_loc('2025-01-02')
+start = returns.index.get_loc('2025-02-03')
 print("Line 53:", start)
-end = returns.index.get_loc('2025-01-06')
+end = returns.index.get_loc('2025-02-10')
 print("Line 56:", end)
 
 lasso_ret, ridge_ret, ew_ret, minvar_ret, eval_dates = [], [], [], [], []
@@ -111,3 +117,38 @@ results = pd.DataFrame({
 print("Line 101:", results)
 
 print(results.mean() / results.std())  # Sharpe ratios
+
+#-------- added--------- 
+#Plotting the Cumulative Returns
+# Calculate the growth of $1 by taking the cumulative product of (1 + daily returns)
+cumulative_returns = (1 + results).cumprod()
+
+#--------added--------------------
+#returns the last cumulative returns
+last_date = cumulative_returns.index[-1]
+last_values = cumulative_returns.iloc[-1]
+print(f"\nCumulative returns on {last_date.date()}:")
+print(last_values)
+#----------------------------------
+
+
+fig, ax = plt.subplots(figsize=(14, 8))
+
+for model in cumulative_returns.columns:
+    ax.plot(cumulative_returns.index, cumulative_returns[model], label=model, lw=2)
+
+ax.set_title('Cumulative Return (Out-of-Sample)', fontsize=18, pad=20)
+ax.set_xlabel('Date', fontsize=12)
+# ax.set_ylabel('Growth of $1', fontsize=12)
+ax.axhline(1.0, color='grey', linestyle='--', linewidth=1.0) # Break-even line
+ax.legend(title='Portfolio Strategy', fontsize=11)
+ax.grid(True, which='both', linestyle='--', linewidth=0.5)
+
+# Date formatting functions that require mdates
+ax.xaxis.set_major_locator(mdates.MonthLocator(bymonthday=1))
+ax.xaxis.set_major_formatter(mdates.DateFormatter('%b-%Y'))
+fig.autofmt_xdate() # Rotate date labels for better readability
+
+plt.tight_layout()
+plt.show()
+print("Plot displayed.")
